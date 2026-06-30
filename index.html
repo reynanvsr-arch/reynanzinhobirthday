@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Penguin — Convite de Aniversário</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#1565C0;
+  --light:#4FC3F7;
+  --navy:#0D47A1;
+  --dark:#051C3C;
+  --gold:#FFD700;
+  --gold-dk:#FFA000;
+  --red:#E53935;
+  --green:#43A047;
+  --white:#FFFFFF;
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { width:100%; height:100%; }
+body {
+  font-family:'Press Start 2P', monospace;
+  background:var(--dark);
+  color:var(--white);
+  overflow:hidden;
+  user-select:none;
+}
+button, input { font-family:'Press Start 2P', monospace; }
+
+#snow { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+.flake { position:absolute; top:-24px; color:rgba(255,255,255,.6); animation:snowfall linear infinite; }
+@keyframes snowfall { to { transform:translateY(110vh) rotate(360deg); opacity:0; } }
+
+#puffle {
+  position:fixed; z-index:9997; pointer-events:none; transform:translate(-50%,-50%);
+  opacity:0; transition:opacity .7s;
+}
+#puffle img { width:42px; height:auto; display:block; }
+#puffle.vis { opacity:1; }
+
+#hud {
+  position:fixed; top:12px; right:12px; z-index:500;
+  background:var(--dark); border:2px solid var(--gold); border-radius:10px;
+  padding:6px 10px; font-size:clamp(6px,1vw,8px); color:var(--gold);
+  align-items:center; gap:6px; display:none; box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+#hud img { width:22px; height:auto; }
+
+#snd-btn {
+  position:fixed; bottom:12px; right:12px; z-index:500;
+  background:var(--dark); border:2px solid var(--light); border-radius:12px;
+  width:56px; height:56px; color:white; cursor:pointer; font-size:22px;
+  transition:transform .2s, box-shadow .2s; box-shadow:0 4px 12px rgba(0,0,0,.35);
+}
+#snd-btn:hover { transform:scale(1.08); box-shadow:0 0 16px rgba(79,195,247,.45); }
+
+#toast {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(90px);
+  background:var(--gold); color:var(--dark); font-size:clamp(6px,1vw,8px);
+  padding:10px 22px; border-radius:8px; z-index:9999; transition:transform .4s;
+  white-space:nowrap; max-width:92vw; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,.4);
+}
+#toast.show { transform:translateX(-50%) translateY(0); }
+
+.screen {
+  position:fixed; inset:0; padding:16px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; opacity:0; pointer-events:none;
+  transition:opacity .55s; z-index:10;
+}
+.screen.on { opacity:1; pointer-events:all; z-index:20; }
+
+#s-load { background:linear-gradient(180deg,#0b3a90 0%,#1565C0 55%,#0d47a1 100%); }
+.main-logo { max-width:min(300px,62vw); height:auto; margin-bottom:4px; }
+.sub-logo { max-width:min(100px,22vw); height:auto; margin-bottom:26px; animation:bob 1.4s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.load-msg { font-size:clamp(6px,1.1vw,9px); color:var(--light); margin-bottom:14px; min-height:14px; text-align:center; }
+.bar-track {
+  width:min(380px,80vw); height:22px; background:rgba(0,0,0,.3);
+  border:3px solid var(--light); border-radius:11px; overflow:hidden; margin-bottom:10px;
+}
+.bar-fill {
+  height:100%; width:0%; background:linear-gradient(90deg,var(--light),var(--gold));
+  border-radius:9px; transition:width .38s ease;
+}
+.load-copy { font-size:clamp(5px,.9vw,7px); color:rgba(255,255,255,.28); text-align:center; }
+
+#s-login { background:linear-gradient(180deg,#0b3a90 0%,#1565C0 100%); }
+.login-wrap { position:relative; width:100%; max-width:min(370px,90vw); }
+.sticky {
+  position:absolute; top:-16px; right:-16px; background:#FFE040; color:#444;
+  font-size:clamp(5px,.9vw,7px); padding:10px 12px; transform:rotate(5deg); z-index:5;
+  line-height:1.9; box-shadow:2px 3px 8px rgba(0,0,0,.3); border-radius:2px;
+}
+.login-box {
+  background:rgba(255,255,255,.08); border:3px solid rgba(255,255,255,.22);
+  border-radius:14px; padding:24px;
+}
+.fld { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.fld label { font-size:clamp(6px,1.1vw,8px); color:#acd6f5; }
+.fld input {
+  font-size:clamp(7px,1.2vw,9px); padding:10px 12px; background:white;
+  border:3px solid #acd6f5; border-radius:8px; color:#333; outline:none;
+  transition:border-color .2s; width:100%;
+}
+.fld input:focus { border-color:var(--gold); }
+.chk-row {
+  display:flex; align-items:center; gap:8px; font-size:clamp(5px,.9vw,7px);
+  cursor:pointer; color:rgba(255,255,255,.7); margin-bottom:9px;
+}
+.chk-row input { accent-color:var(--gold); width:14px; height:14px; }
+.hint { font-size:clamp(5px,.9vw,7px); color:rgba(255,255,255,.32); text-align:center; margin-top:7px; }
+
+.btn {
+  font-size:clamp(7px,1.2vw,9px); padding:12px 20px; border:none; border-radius:8px;
+  cursor:pointer; text-transform:uppercase; letter-spacing:1px; transition:transform .1s, filter .1s;
+  display:block; text-align:center; width:100%;
+}
+.btn:active { transform:translateY(3px); filter:brightness(.88); }
+.btn-gold {
+  background:linear-gradient(180deg,#FFE040 0%,var(--gold) 55%,var(--gold-dk) 100%);
+  color:var(--dark); box-shadow:0 5px 0 #b56f00;
+}
+.btn-blue {
+  background:linear-gradient(180deg,var(--light) 0%,var(--blue) 100%);
+  color:var(--white); box-shadow:0 5px 0 #0a3a7a;
+}
+.btn-green {
+  background:linear-gradient(180deg,#81C784 0%,var(--green) 100%);
+  color:var(--white); box-shadow:0 5px 0 #1B5E20; flex:1;
+}
+.btn-red {
+  background:linear-gradient(180deg,#EF5350 0%,var(--red) 100%);
+  color:var(--white); box-shadow:0 5px 0 #B71C1C; flex:1;
+}
+
+.win {
+  background:var(--blue); border:4px solid var(--light); border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.55); width:100%; max-width:min(490px,93vw); overflow:hidden;
+}
+.win-bar {
+  background:var(--light); color:var(--dark); padding:10px 16px;
+  font-size:clamp(6px,1.2vw,9px); display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.win-body {
+  padding:22px; overflow-y:auto; max-height:66vh;
+  scrollbar-width:thin; scrollbar-color:var(--light) transparent;
+}
+.win-body::-webkit-scrollbar { width:5px; }
+.win-body::-webkit-scrollbar-thumb { background:var(--light); border-radius:3px; }
+
+#s-msg { background:linear-gradient(180deg,var(--dark) 0%,var(--navy) 100%); }
+.wtitle { font-size:clamp(9px,1.5vw,13px); color:var(--gold); margin-bottom:24px; text-align:center; line-height:1.8; }
+.mail { font-size:clamp(68px,12vw,96px); animation:wiggle .7s ease-in-out infinite alternate; cursor:pointer; }
+@keyframes wiggle { from{transform:rotate(-8deg)} to{transform:rotate(8deg)} }
+.badge {
+  background:var(--red); color:var(--white); font-size:clamp(6px,1.1vw,8px);
+  padding:6px 14px; border-radius:20px; border:2px solid white; margin:14px 0 22px;
+}
+
+#s-letter { background:linear-gradient(180deg,var(--dark) 0%,var(--navy) 100%); }
+.epf-hdr { text-align:center; margin-bottom:18px; }
+.epf-logo { width:clamp(60px,9vw,90px); height:auto; margin-bottom:8px; }
+.epf-lbl { font-size:clamp(7px,1.2vw,10px); color:var(--gold); letter-spacing:3px; margin-top:4px; }
+.stamp-img { width:clamp(55px,7vw,78px); height:auto; transform:rotate(-6deg); flex-shrink:0; }
+.lbody { font-size:clamp(6px,1.1vw,8px); line-height:2.3; }
+.lbody p { margin-bottom:10px; }
+.hl { color:var(--gold); }
+.fade { color:rgba(255,255,255,.38); font-size:80%; }
+
+#s-mission { background:linear-gradient(180deg,#120735 0%,#2D1B69 55%,#120735 100%); }
+.glow {
+  font-size:clamp(8px,1.4vw,11px); color:var(--gold); text-align:center; margin-bottom:20px;
+  animation:glow 2.2s ease-in-out infinite alternate;
+}
+@keyframes glow { from{text-shadow:0 0 4px var(--gold)} to{text-shadow:0 0 18px var(--gold),0 0 36px #FFC107} }
+.row {
+  display:flex; align-items:flex-start; gap:12px; background:rgba(0,0,0,.3);
+  padding:11px 12px; border-radius:8px; border-left:3px solid var(--gold); margin-bottom:9px;
+}
+.row .ico { font-size:clamp(15px,2.3vw,20px); flex-shrink:0; padding-top:2px; }
+.row .inf { font-size:clamp(6px,1vw,8px); color:var(--light); line-height:1.9; }
+.row .inf strong { color:var(--gold); display:block; margin-bottom:2px; }
+
+#s-map {
+  background:linear-gradient(180deg,#87CEEB 0%,#C3E8FF 50%,#DDF0FF 100%);
+  justify-content:flex-start; overflow-y:auto; padding:10px;
+  scrollbar-width:thin; scrollbar-color:var(--blue) transparent;
+}
+.map-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  width:min(1320px,98vw); margin:0 auto 8px auto; flex-wrap:wrap; gap:8px;
+}
+.map-hdr-t { font-size:clamp(7px,1.2vw,10px); color:var(--dark); }
+.map-hdr-h { font-size:clamp(5px,.9vw,7px); color:rgba(0,0,30,.5); }
+.map-layout {
+  width:min(1320px,98vw); margin:0 auto; display:flex; gap:18px;
+  align-items:flex-start; justify-content:center; flex-wrap:wrap;
+}
+.map-main { flex:1 1 760px; min-width:min(760px,98vw); }
+.map-wrap {
+  position:relative; width:100%; height:min(540px,70vh); min-height:460px;
+  background-color:#b8e2ff;
+  background-image:linear-gradient(rgba(255,255,255,0.02), rgba(255,255,255,0.02)), url('imgs/favourite-map-in-club-penguin-v0-87xldm52x2wa1.png');
+  background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
+  border:4px solid var(--navy); border-radius:22px; overflow:hidden;
+  box-shadow:0 12px 38px rgba(0,0,0,.35);
+}
+.bld {
+  position:absolute; z-index:3; cursor:pointer; display:flex; flex-direction:column; align-items:center;
+  gap:5px; transform:translate(-50%,-50%); transition:transform .18s ease;
+}
+.bld:hover { transform:translate(-50%,-50%) scale(1.14) translateY(-4px); z-index:12; }
+.bld img { width:clamp(62px,5.2vw,95px); height:auto; filter:drop-shadow(2px 3px 7px rgba(0,0,0,.65)); display:block; }
+.bld[data-key="dock"] img { width:clamp(88px,8vw,135px); }
+.bld[data-key="ice"] img { width:clamp(88px,8vw,140px); }
+.bld[data-key="club"] img { width:clamp(84px,7vw,125px); }
+.bld-lbl {
+  font-size:clamp(5px,.8vw,7px); color:white; background:rgba(0,0,50,.82); padding:3px 8px;
+  border-radius:5px; white-space:nowrap; text-shadow:1px 1px 2px black; box-shadow:0 2px 5px rgba(0,0,0,.35);
+}
+.bld-em { font-size:clamp(36px,4vw,52px); filter:drop-shadow(2px 3px 6px rgba(0,0,0,.55)); }
+.coin {
+  position:absolute; cursor:pointer; z-index:4; animation:float-coin 3s ease-in-out infinite;
+  transition:transform .2s, opacity .3s; transform:translate(-50%,-50%);
+}
+.coin img { width:clamp(24px,3vw,34px); height:auto; filter:drop-shadow(1px 2px 4px rgba(0,0,0,.5)); }
+.coin .em { font-size:clamp(20px,3vw,28px); }
+.coin:hover img, .coin:hover .em { transform:scale(1.28); }
+@keyframes float-coin { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-9px)} }
+.herbert {
+  position:absolute; cursor:pointer; z-index:4; transform:translate(-50%,-50%);
+  animation:hpeek 5s ease-in-out infinite;
+}
+.herbert img { width:clamp(70px,6vw,105px); height:auto; filter:drop-shadow(2px 3px 5px rgba(0,0,0,.6)); }
+.herbert .em { font-size:clamp(30px,4.5vw,50px); }
+@keyframes hpeek { 0%,60%,100%{transform:translate(-50%,-50%) translateY(0)} 75%{transform:translate(-50%,-50%) translateY(22px) scaleY(.3)} }
+
+.confirmed-panel {
+  width:min(330px,98vw); min-height:540px; max-height:min(540px,70vh);
+  background:rgba(5,28,60,.94); border:3px solid var(--light); border-radius:18px;
+  box-shadow:0 8px 28px rgba(0,0,0,.42); padding:16px; color:white; display:flex; flex-direction:column;
+}
+.confirmed-title { color:var(--gold); font-size:clamp(7px,1vw,10px); line-height:1.8; text-align:center; margin-bottom:8px; }
+.confirmed-count { font-size:clamp(5px,.9vw,7px); color:var(--light); text-align:center; margin-bottom:12px; }
+.confirm-form {
+  display:flex; flex-direction:column; gap:10px; margin-bottom:14px; padding:12px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); border-radius:12px;
+}
+.confirm-form label { font-size:clamp(5px,.9vw,7px); color:#acd6f5; line-height:1.7; }
+.confirm-form input {
+  width:100%; padding:10px; border-radius:8px; border:2px solid #acd6f5;
+  background:white; color:#333; outline:none; font-size:clamp(6px,1vw,8px);
+}
+.confirm-form input:focus { border-color:var(--gold); }
+.confirmed-list {
+  flex:1; overflow-y:auto; padding-right:4px; scrollbar-width:thin; scrollbar-color:var(--light) transparent;
+}
+.confirmed-list::-webkit-scrollbar { width:5px; }
+.confirmed-list::-webkit-scrollbar-thumb { background:var(--light); border-radius:3px; }
+.confirmed-item {
+  background:rgba(255,255,255,.08); border-left:3px solid var(--gold);
+  border-radius:8px; padding:9px 10px; margin-bottom:8px;
+}
+.confirmed-name { font-size:clamp(6px,1vw,8px); color:white; line-height:1.7; word-break:break-word; }
+.confirmed-meta { font-size:clamp(4px,.75vw,6px); color:rgba(255,255,255,.45); margin-top:3px; }
+.confirmed-note { font-size:clamp(4px,.75vw,6px); color:rgba(255,255,255,.35); text-align:center; line-height:1.8; margin-top:10px; }
+
+#s-ok { background:linear-gradient(180deg,#1B5E20 0%,#2E7D32 55%,#1B5E20 100%); }
+.ok-big { font-size:clamp(52px,9vw,82px); animation:celeb .5s ease-in-out infinite alternate; margin-bottom:4px; }
+@keyframes celeb { from{transform:scale(1) rotate(-5deg)} to{transform:scale(1.1) rotate(5deg)} }
+.ok-t { font-size:clamp(8px,1.4vw,11px); color:var(--gold); text-align:center; margin:12px 0 8px; }
+.ok-s { font-size:clamp(6px,1vw,8px); color:var(--light); text-align:center; line-height:2.3; margin-bottom:14px; }
+.ok-f { font-size:clamp(5px,.9vw,7px); color:rgba(255,255,255,.3); text-align:center; margin-bottom:16px; }
+
+#overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.78); padding:20px; display:flex; align-items:center; justify-content:center;
+  z-index:2000; opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#overlay.open { opacity:1; pointer-events:all; }
+#mbox {
+  background:var(--blue); border:4px solid var(--light); border-radius:16px;
+  width:100%; max-width:min(450px,90vw); box-shadow:0 10px 40px rgba(0,0,0,.6);
+  overflow:hidden; transform:scale(.82); transition:transform .3s cubic-bezier(.175,.885,.32,1.275);
+}
+#overlay.open #mbox { transform:scale(1); }
+#mbar {
+  background:var(--light); color:var(--dark); padding:10px 16px; font-size:clamp(7px,1.2vw,9px);
+  display:flex; justify-content:space-between; align-items:center;
+}
+#mclose { cursor:pointer; font-size:18px; font-weight:bold; transition:transform .2s; }
+#mclose:hover { transform:rotate(90deg); }
+#mbody {
+  padding:20px; font-size:clamp(6px,1.1vw,8px); line-height:2.1; max-height:60vh; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:var(--light) transparent;
+}
+#mbody::-webkit-scrollbar { width:5px; }
+#mbody::-webkit-scrollbar-thumb { background:var(--light); border-radius:3px; }
+#mbody p { margin-bottom:8px; }
+.puffle-row { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+.puffle-item { text-align:center; flex:1; min-width:52px; }
+.puffle-item img { width:clamp(34px,5.5vw,52px); height:auto; display:block; margin:0 auto 4px; }
+.puffle-item .pname { font-size:clamp(5px,.9vw,7px); color:var(--light); }
+.puffle-item .ptype { font-size:clamp(4px,.8vw,6px); color:rgba(255,255,255,.45); }
+
+#waddleon { position:fixed; inset:0; z-index:8000; pointer-events:none; display:none; }
+@keyframes pop-in {
+  0% { opacity:0; transform:scale(0) rotate(-20deg); }
+  80% { transform:scale(1.25) rotate(5deg); }
+  100% { opacity:1; transform:scale(1) rotate(0deg); }
+}
+.snow-trail {
+  position:absolute; pointer-events:none; z-index:20; font-size:14px; opacity:.95;
+  animation:snowTrail .9s ease-out forwards;
+}
+@keyframes snowTrail {
+  0% { opacity:1; transform:translate(-50%,-50%) scale(.7); }
+  100% { opacity:0; transform:translate(-50%,-130%) scale(1.25); }
+}
+#yt-holder { position:fixed; width:1px; height:1px; overflow:hidden; left:-9999px; top:-9999px; }
+
+@media(max-width:1100px) {
+  .map-main { min-width:0; width:97vw; }
+  .map-wrap { height:60vw; min-height:380px; }
+  .confirmed-panel { width:97vw; min-height:260px; max-height:320px; }
+  .sticky { right:0; }
+}
+</style>
+</head>
+<body>
+
+<div id="snow"></div>
+<div id="puffle"><img src="imgs/Puffle_amarelo.webp" alt="Puffle" onerror="this.style.display='none'"></div>
+<div id="hud"><img src="imgs/Coin.PNG.webp" alt="coin" onerror="this.style.display='none'"> <span id="ccount">0</span> moedas</div>
+<button id="snd-btn" type="button">🔇</button>
+<div id="toast"></div>
+<div id="waddleon"></div>
+<div id="yt-holder"></div>
+
+<div class="screen on" id="s-load">
+  <img src="imgs/Disney_Club_Penguin_Logo.svg.png" class="main-logo" alt="Club Penguin" onerror="this.style.display='none'">
+  <img src="imgs/pinguimlogo.png" class="sub-logo" alt="Pinguim" onerror="this.style.display='none'">
+  <div class="load-msg" id="load-msg">Inicializando...</div>
+  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+  <div class="load-copy">© Club Penguin — Ilha dos Pinguins</div>
+</div>
+
+<div class="screen" id="s-login">
+  <div class="login-wrap">
+    <div class="sticky">MANTENHA SUA<br>SENHA EM<br>SEGREDO! 🔒</div>
+    <div class="login-box">
+      <div class="fld">
+        <label>Nome do Pinguim:</label>
+        <input type="text" id="inp-name" placeholder="seu_pinguim" maxlength="20" autocomplete="off">
+      </div>
+      <div class="fld">
+        <label>Senha:</label>
+        <input type="password" id="inp-pass" placeholder="••••••••" maxlength="20" autocomplete="off">
+      </div>
+      <label class="chk-row"><input type="checkbox"> Lembrar este computador</label>
+      <label class="chk-row"><input type="checkbox"> Lembrar minha senha</label>
+      <button class="btn btn-gold" onclick="doLogin()">ENTRAR</button>
+      <p class="hint" style="margin-top:10px">Esqueceu sua senha?</p>
+      <p class="hint">Não tem pinguim? Crie sua conta grátis</p>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-msg">
+  <div class="wtitle" id="w-name">Bem-vindo! 🐧</div>
+  <div class="mail" onclick="openLetter()">📨</div>
+  <div class="badge">1 nova mensagem</div>
+  <button class="btn btn-gold" style="max-width:240px" onclick="openLetter()">Abrir mensagem</button>
+</div>
+
+<div class="screen" id="s-letter">
+  <div class="win">
+    <div class="win-bar">
+      📬 EPF — MENSAGEM CONFIDENCIAL
+      <img src="imgs/topsecret.png" class="stamp-img" alt="Top Secret" onerror="this.style.display='none'">
+    </div>
+    <div class="win-body">
+      <div class="epf-hdr">
+        <img src="imgs/EPF_Logo.png" class="epf-logo" alt="EPF" onerror="this.style.display='none'">
+        <div class="epf-lbl">ELITE PENGUIN FORCE</div>
+      </div>
+      <div class="lbody">
+        <p>Olá, Agente <span class="hl" id="letter-name">Agente</span>!</p>
+        <p>Você foi selecionado(a) para uma missão de <span class="hl">extrema importância</span> na Ilha dos Pinguins.</p>
+        <p>O Diretor detectou uma celebração de alto nível e requer a sua presença <span class="hl">imediatamente.</span></p>
+        <p style="color:var(--gold)">Esta mensagem se autodestruirá em 5... 4... 3... 2... 1... 💥</p>
+        <p class="fade">(Não vai. A festa é importante demais 🐧)</p>
+      </div>
+      <button class="btn btn-gold" style="margin-top:16px" onclick="openMission()">🕵️ VER BRIEFING DA MISSÃO</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-mission">
+  <div class="win">
+    <div class="win-bar">🕵️ MISSÃO EPF: OPERAÇÃO BOLO 🎂</div>
+    <div class="win-body">
+      <div class="glow">⚡ BRIEFING CONFIDENCIAL ⚡</div>
+      <div class="row"><div class="ico">📅</div><div class="inf"><strong>DATA DA MISSÃO</strong><span id="m-data">—</span></div></div>
+      <div class="row"><div class="ico">🕒</div><div class="inf"><strong>HORA DE INÍCIO</strong><span id="m-hora">—</span></div></div>
+      <div class="row"><div class="ico">📍</div><div class="inf"><strong>PONTO DE ENCONTRO</strong><span id="m-local">—</span></div></div>
+      <div class="row"><div class="ico">🎂</div><div class="inf"><strong>OBJETIVO PRIMÁRIO</strong><span id="m-objetivo">Celebrar este grande aniversário!</span></div></div>
+      <div class="row"><div class="ico">⚠️</div><div class="inf"><strong>AVISO</strong>Traga bom humor e disposição para dançar! 💃🕺</div></div>
+      <button class="btn btn-gold" style="margin-top:16px" onclick="openMap()">🗺️ EXPLORAR A ILHA</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-map">
+  <div class="map-hdr">
+    <span class="map-hdr-t">🗺️ ILHA DOS PINGUINS</span>
+    <span class="map-hdr-h">Clique nos lugares para explorar! A lista é local neste navegador.</span>
+  </div>
+
+  <div class="map-layout">
+    <div class="map-main">
+      <div class="map-wrap" id="mapwrap"></div>
+    </div>
+
+    <aside class="confirmed-panel">
+      <div class="confirmed-title">✅ AGENTES CONFIRMADOS</div>
+      <div class="confirmed-count"><span id="confirmed-count">0</span> confirmado(s)</div>
+
+      <div class="confirm-form">
+        <label for="guest-name">Seu nome de pinguim:</label>
+        <input id="guest-name" type="text" maxlength="20" placeholder="Digite seu nome">
+        <button class="btn btn-gold" onclick="confirmarLocal()">✅ Confirmar presença</button>
+      </div>
+
+      <div id="confirmed-list" class="confirmed-list"></div>
+      <div class="confirmed-note">Esta lista é salva localmente neste navegador.</div>
+    </aside>
+  </div>
+</div>
+
+<div class="screen" id="s-ok">
+  <div class="win">
+    <div class="win-bar">🎉 MISSÃO ACEITA!</div>
+    <div class="win-body" style="text-align:center">
+      <div class="ok-big">🎉</div>
+      <div class="ok-t">PRESENÇA CONFIRMADA, AGENTE!</div>
+      <div class="ok-s">Nos vemos na festa! 🐧✨<br>Prepare-se para a melhor missão do ano!</div>
+      <div class="ok-f">Waddle on! 🐾</div>
+      <button class="btn btn-blue" onclick="go('s-map')">🗺️ Voltar ao Mapa</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" onclick="closeBg(event)">
+  <div id="mbox">
+    <div id="mbar"><span id="mtitle"></span><span id="mclose" onclick="closeModal()">✕</span></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script>
+const DATA_FESTA = '15 de Agosto';
+const HORA_FESTA = '14h';
+const LOCAL_FESTA = 'Rua Doutor Gomes Ferraz, 176 - Vila Pereira Barreto';
+const YT_MUSIC_ID = 'pWcWbDSo1uQ';
+
+const POS = {
+  dock:    { l:'14%', t:'86%' },
+  pizza:   { l:'26%', t:'63%' },
+  coffee:  { l:'38%', t:'56%' },
+  club:    { l:'52%', t:'49%' },
+  gift:    { l:'65%', t:'61%' },
+  pet:     { l:'77%', t:'61%' },
+  herb:    { l:'86%', t:'52%' },
+  iceberg: { l:'52%', t:'89%' },
+  coin1:   { l:'12%', t:'26%' },
+  coin2:   { l:'30%', t:'53%' },
+  coin3:   { l:'78%', t:'51%' }
+};
+
+const PERSONAGENS_BASE = [
+  'Rockhopper',
+  'Gary',
+  'Cadence',
+  'Aunt Arctic',
+  'Rookie',
+  'Sensei',
+  'Dot',
+  'Jet Pack Guy'
+];
+
+let username='Agente';
+let coins=0;
+let soundOn=false;
+let audioCtx=null;
+let curScr='s-load';
+let cheatBuf='';
+let mapBuilt=false;
+let pX=0, pY=0, tX=0, tY=0;
+let toastT;
+let ytLoaded=false;
+
+const missionValues = {
+  data: DATA_FESTA,
+  hora: HORA_FESTA,
+  local: LOCAL_FESTA,
+  objetivo: 'Celebrar o aniversário em grande estilo!'
+};
+
+document.getElementById('m-data').textContent = missionValues.data;
+document.getElementById('m-hora').textContent = missionValues.hora;
+document.getElementById('m-local').textContent = missionValues.local;
+document.getElementById('m-objetivo').textContent = missionValues.objetivo;
+
+function ctx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(f,d,t='sine',v=.22) {
+  if (!soundOn) return;
+  try {
+    const c=ctx();
+    const o=c.createOscillator();
+    const g=c.createGain();
+    o.connect(g);
+    g.connect(c.destination);
+    o.type=t;
+    o.frequency.value=f;
+    g.gain.setValueAtTime(v,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);
+    o.start();
+    o.stop(c.currentTime+d);
+  } catch(e) {}
+}
+
+function seq(ns) { ns.forEach(({f,d,t,ms})=>setTimeout(()=>tone(f,d,t||'sine'),ms)); }
+
+const SFX = {
+  login:  ()=>seq([{f:261,d:.15,ms:0},{f:329,d:.15,ms:160},{f:392,d:.15,ms:320},{f:523,d:.3,ms:480}]),
+  pop:    ()=>seq([{f:880,d:.07,t:'square',ms:0},{f:1100,d:.07,t:'square',ms:75}]),
+  coin:   ()=>seq([{f:1047,d:.1,ms:0},{f:1319,d:.1,ms:110},{f:1568,d:.2,ms:220}]),
+  epf:    ()=>seq([{f:523,d:.1,ms:0},{f:659,d:.1,ms:130},{f:784,d:.14,ms:260},{f:1047,d:.28,ms:400}]),
+  waddle: ()=>seq([{f:523,d:.08,ms:0},{f:659,d:.08,ms:100},{f:784,d:.08,ms:200},{f:1047,d:.08,ms:300},{f:1319,d:.08,ms:400},{f:1568,d:.18,ms:510},{f:2093,d:.32,ms:710}]),
+  bear:   ()=>seq([{f:150,d:.32,t:'sawtooth',ms:0},{f:120,d:.48,t:'sawtooth',ms:320}])
+};
+
+function loadYT() {
+  if (ytLoaded) return;
+  ytLoaded = true;
+  document.getElementById('yt-holder').innerHTML =
+    '<iframe width="1" height="1" allow="autoplay" src="https://www.youtube.com/embed/' +
+    YT_MUSIC_ID +
+    '?autoplay=1&loop=1&playlist=' +
+    YT_MUSIC_ID +
+    '&controls=0&disablekb=1&modestbranding=1&playsinline=1" frameborder="0"></iframe>';
+}
+
+function stopYT() {
+  ytLoaded = false;
+  document.getElementById('yt-holder').innerHTML = '';
+}
+
+document.getElementById('snd-btn').addEventListener('click', function() {
+  soundOn = !soundOn;
+  this.textContent = soundOn ? '🔊' : '🔇';
+  if (soundOn) {
+    ctx();
+    SFX.login();
+    loadYT();
+  } else {
+    stopYT();
+  }
+});
+
+(function createSnow(){
+  const c=document.getElementById('snow');
+  const ch=['❄','❅','❆','·','*','✦'];
+  for(let i=0;i<50;i++){
+    const f=document.createElement('div');
+    f.className='flake';
+    f.textContent=ch[Math.floor(Math.random()*ch.length)];
+    f.style.left=(Math.random()*100)+'%';
+    f.style.fontSize=(.4+Math.random()*.8)+'em';
+    f.style.animationDuration=(4+Math.random()*7)+'s';
+    f.style.animationDelay=(Math.random()*7)+'s';
+    c.appendChild(f);
+  }
+})();
+
+const pEl=document.getElementById('puffle');
+document.addEventListener('mousemove',e=>{tX=e.clientX;tY=e.clientY;});
+document.addEventListener('touchmove',e=>{tX=e.touches[0].clientX;tY=e.touches[0].clientY;},{passive:true});
+
+(function animatePuffle(){
+  pX += (tX-pX)*.13;
+  pY += (tY-pY)*.13;
+  pEl.style.left = pX+'px';
+  pEl.style.top = pY+'px';
+  requestAnimationFrame(animatePuffle);
+})();
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  curScr=id;
+}
+
+const stages = [
+  {msg:'Conectando aos servidores...',pct:12},
+  {msg:'Carregando neve...',pct:26},
+  {msg:'Acordando os puffles...',pct:42},
+  {msg:'Preparando a ilha...',pct:58},
+  {msg:'Verificando agentes EPF...',pct:74},
+  {msg:'Quase pronto...',pct:88},
+  {msg:'Bem-vindo ao Club Penguin! 🐧',pct:100}
+];
+
+let si=0;
+const msgEl=document.getElementById('load-msg');
+const barEl=document.getElementById('bar');
+
+function nextStage() {
+  if (si >= stages.length) {
+    setTimeout(()=>go('s-login'),700);
+    return;
+  }
+  const s=stages[si++];
+  msgEl.textContent=s.msg;
+  barEl.style.width=s.pct+'%';
+  setTimeout(nextStage, si===stages.length ? 900 : 280 + Math.random()*580);
+}
+setTimeout(nextStage,700);
+
+function doLogin() {
+  const n=document.getElementById('inp-name').value.trim();
+  username=n || 'Agente';
+  document.getElementById('guest-name').value = username;
+  SFX.login();
+  document.getElementById('w-name').textContent='Bem-vindo, ' + username + '! 🐧';
+  document.getElementById('letter-name').textContent=username;
+  go('s-msg');
+}
+
+document.getElementById('inp-name').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('inp-pass').focus(); });
+document.getElementById('inp-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+function openLetter(){ SFX.pop(); go('s-letter'); }
+function openMission(){ SFX.epf(); go('s-mission'); }
+function openMap() {
+  SFX.pop();
+  go('s-map');
+  document.getElementById('hud').style.display='flex';
+  pEl.classList.add('vis');
+  buildMap();
+  renderConfirmedList();
+  toast('Explore a ilha! Clique nos lugares 🗺️','#0D47A1','white');
+}
+
+function makeImg(src, alt) {
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = alt;
+  return img;
+}
+
+function makeLabel(text) {
+  const lbl = document.createElement('div');
+  lbl.className = 'bld-lbl';
+  lbl.textContent = text;
+  return lbl;
+}
+
+function makeEmojiFallback(emoji) {
+  const span = document.createElement('span');
+  span.className = 'bld-em';
+  span.textContent = emoji;
+  return span;
+}
+
+function buildMap() {
+  if (mapBuilt) return;
+  mapBuilt = true;
+
+  const map=document.getElementById('mapwrap');
+
+  function addBld(key,label,imgCandidates,fallbackEm,left,top,onClickId) {
+    const d=document.createElement('div');
+    d.className='bld';
+    d.dataset.key=key;
+    d.style.left=left;
+    d.style.top=top;
+    d.addEventListener('click', ()=>modal(onClickId || key));
+
+    const img = makeImg(imgCandidates[0],label);
+    let idx = 0;
+    img.onerror = function() {
+      idx += 1;
+      if (idx < imgCandidates.length) {
+        this.src = imgCandidates[idx];
+      } else {
+        this.replaceWith(makeEmojiFallback(fallbackEm));
+      }
+    };
+
+    d.appendChild(img);
+    d.appendChild(makeLabel(label));
+    map.appendChild(d);
+  }
+
+  addBld('dock','Dock',['imgs/doca-removebg-preview.png'],'⚓',POS.dock.l,POS.dock.t,'dock');
+  addBld('pizza','Pizza Parlor',['imgs/pizzaparlor.png'],'🍕',POS.pizza.l,POS.pizza.t,'pizza');
+  addBld('coffee','Coffee Shop',['imgs/caffe.png'],'☕',POS.coffee.l,POS.coffee.t,'coffee');
+  addBld('club','Night Club',['imgs/nightclub.jpg','imgs/nighclub.png'],'🪩',POS.club.l,POS.club.t,'club');
+  addBld('gift','Gift Shop',['imgs/giftshop.png'],'🎁',POS.gift.l,POS.gift.t,'gift');
+  addBld('pet','Pet Shop',['imgs/petshop.png'],'🐾',POS.pet.l,POS.pet.t,'pet');
+  addBld('ice','Iceberg',['imgs/22-227102_new-iceberg-icon-club-penguin-iceberg.png','imgs/22-227102_new-iceberg-icon-club-penguin-iceberg-png.png'],'🏔️',POS.iceberg.l,POS.iceberg.t,'ice');
+
+  const herb=document.createElement('div');
+  herb.className='herbert';
+  herb.style.left=POS.herb.l;
+  herb.style.top=POS.herb.t;
+  herb.addEventListener('click', foundHerbert);
+  herb.innerHTML='<' + 'img src="imgs/Mister_Herbert_P._Bear.webp" alt="Herbert" onerror="this.outerHTML=\'<span class=\\\"em\\\">🐻</span>\'">';
+  map.appendChild(herb);
+
+  [POS.coin1,POS.coin2,POS.coin3].forEach((p,i)=>{
+    const c=document.createElement('div');
+    c.className='coin';
+    c.style.left=p.l;
+    c.style.top=p.t;
+    c.style.animationDelay=(i*1.1)+'s';
+    c.addEventListener('click', ()=>collectCoin(c));
+
+    const coinImg = makeImg('imgs/Coin.PNG.webp','moeda');
+    coinImg.onerror = function() {
+      const span = document.createElement('span');
+      span.className='em';
+      span.textContent='🪙';
+      this.replaceWith(span);
+    };
+    c.appendChild(coinImg);
+    map.appendChild(c);
+  });
+}
+
+function collectCoin(el) {
+  coins++;
+  document.getElementById('ccount').textContent=coins;
+  SFX.coin();
+  spawnSnowTrail(el);
+  el.style.opacity='0';
+  setTimeout(()=>{
+    el.style.left=(8+Math.random()*80)+'%';
+    el.style.top=(20+Math.random()*62)+'%';
+    el.style.opacity='1';
+  },2600);
+}
+
+function spawnSnowTrail(el) {
+  const map=document.getElementById('mapwrap');
+  const rect=map.getBoundingClientRect();
+  const elRect=el.getBoundingClientRect();
+  const x=elRect.left-rect.left+(elRect.width/2);
+  const y=elRect.top-rect.top+(elRect.height/2);
+
+  for(let i=0;i<7;i++){
+    const d=document.createElement('div');
+    d.className='snow-trail';
+    d.textContent=['❄','✦','·'][Math.floor(Math.random()*3)];
+    d.style.left=(x+(Math.random()*30-15))+'px';
+    d.style.top=(y+(Math.random()*20-10))+'px';
+    d.style.animationDelay=(i*0.03)+'s';
+    map.appendChild(d);
+    setTimeout(()=>d.remove(),900);
+  }
+}
+
+function foundHerbert() {
+  SFX.bear();
+  toast('🐻 Você achou Herbert P. Bear! O inimigo dos pinguins!','#4E342E','white');
+}
+
+function getConfirmedLocal() {
+  const raw = localStorage.getItem('cp_confirmados_local');
+  if (raw) {
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) return arr;
+    } catch(e) {}
+  }
+  localStorage.setItem('cp_confirmados_local', JSON.stringify(PERSONAGENS_BASE));
+  return [...PERSONAGENS_BASE];
+}
+
+function setConfirmedLocal(arr) { localStorage.setItem('cp_confirmados_local', JSON.stringify(arr)); }
+
+function renderConfirmedList() {
+  const arr = getConfirmedLocal();
+  const wrap = document.getElementById('confirmed-list');
+  const count = document.getElementById('confirmed-count');
+  count.textContent = arr.length;
+  wrap.innerHTML = '';
+
+  arr.forEach((nome, idx)=>{
+    const item = document.createElement('div');
+    item.className = 'confirmed-item';
+
+    const name = document.createElement('div');
+    name.className = 'confirmed-name';
+    name.textContent = '🐧 ' + nome;
+
+    const meta = document.createElement('div');
+    meta.className = 'confirmed-meta';
+    meta.textContent = idx < PERSONAGENS_BASE.length ? 'Agente da EPF confirmado' : 'Novo convidado confirmado';
+
+    item.appendChild(name);
+    item.appendChild(meta);
+    wrap.appendChild(item);
+  });
+}
+
+function confirmarLocal() {
+  const input = document.getElementById('guest-name');
+  const nome = (input.value || username || 'Agente').trim();
+
+  if (!nome) {
+    toast('Digite um nome de pinguim primeiro.','#B71C1C','white');
+    return;
+  }
+
+  const arr = getConfirmedLocal();
+  if (!arr.some(n => n.toLowerCase() === nome.toLowerCase())) {
+    arr.push(nome);
+    setConfirmedLocal(arr);
+  }
+
+  SFX.waddle();
+  renderConfirmedList();
+  toast('✅ Presença confirmada, agente!','#1B5E20','white');
+  go('s-ok');
+}
+
+const MODALS = {
+  coffee:{title:'☕ Coffee Shop',html:`
+    <p style="color:var(--gold);margin-bottom:12px">🍵 CARDÁPIO DE BEBIDAS</p>
+    <p>☕ Café Quente do Pinguim <span style="color:var(--gold)">— favorito!</span></p>
+    <p>🍫 Chocolate Quente com Marshmallow</p>
+    <p>🧋 Milk-Shake de Baunilha Ártica</p>
+    <p>🍵 Chá de Menta Gelada</p>
+    <p>🥤 Suco de Fruta da Ilha</p>
+    <p style="color:rgba(255,255,255,.4);font-size:80%;margin-top:10px">Bebidas grátis para Agentes da EPF 😉</p>`
+  },
+  pizza:{title:'🍕 Pizza Parlor',html:`
+    <p style="color:var(--gold);margin-bottom:12px">🍕 CARDÁPIO DA FESTA</p>
+    <p>🍕 Pizza Ártica de Muçarela</p>
+    <p>🍕 Pizza de Cogumelo Nevado</p>
+    <p>🍕 Pizza do Pinguim Feliz</p>
+    <p>🍕 Pizza Especial da Festa 🎂</p>
+    <p style="color:rgba(255,255,255,.4);font-size:80%;margin-top:10px">Pedidos durante a festa!</p>`
+  },
+  club:{title:'🪩 Night Club',html:`
+    <p style="color:var(--gold);margin-bottom:12px">🎵 PLAYLIST DA FESTA</p>
+    <p>1. 🐧 Penguin Dance Mix</p>
+    <p>2. ❄️ Arctic Beats</p>
+    <p>3. 🪩 Disco Penguin 2000</p>
+    <p>4. 🎂 Happy Birthday Remix</p>
+    <p>5. 🌊 Wave Shuffle</p>
+    <p style="color:var(--light);margin-top:12px">🎵 Pista abre às <strong style="color:var(--gold)">22h</strong>!</p>`
+  },
+  gift:{title:'🎁 Gift Shop',html:`
+    <p style="color:var(--gold);margin-bottom:12px">🎁 LISTA DE PRESENTES</p>
+    <p style="color:rgba(255,255,255,.6);margin-bottom:10px">O mais importante é sua presença!<br>Mas se quiser trazer um mimo...</p>
+    <p>🐧 Itens de pinguim</p>
+    <p>🍫 Chocolates e guloseimas</p>
+    <p>🎮 Jogos e diversão</p>
+    <p>❤️ Muito carinho!</p>`
+  },
+  ice:{title:'🏔️ Iceberg — Surpresa',html:`
+    <p style="color:var(--gold);text-align:center;margin-bottom:14px">❄️ PONTO GELADO</p>
+    <div style="text-align:center;font-size:52px;margin:14px 0">🏔️</div>
+    <p style="text-align:center;color:var(--light)">A ilha inteira já sabe: vai ser uma festa lendária.</p>
+    <p style="text-align:center;color:rgba(255,255,255,.35);font-size:75%;margin-top:10px">Prepare-se para a melhor missão da temporada 🐧✨</p>`
+  },
+  dock:{title:'⚓ Dock — Jogos',html:`
+    <p style="color:var(--gold);margin-bottom:12px">🎮 GAMES DA FESTA</p>
+    <p>⚓ Caça ao Tesouro do Pinguim</p>
+    <p>🎯 Arremesso de Snowballs</p>
+    <p>🃏 Batalha Naval Ártica</p>
+    <p>🎲 Corrida de Puffles</p>
+    <p>🧩 Quiz: Você conhece o Club Penguin?</p>
+    <p style="color:rgba(255,255,255,.4);font-size:80%;margin-top:10px">Vencedor leva moedas extras! 🪙</p>`
+  },
+  pet:{title:'🐾 Pet Shop — Puffles',html:`
+    <p style="color:var(--gold);margin-bottom:14px">🐾 PUFFLES DA FESTA</p>
+    <div class="puffle-row">
+      <div class="puffle-item">
+        <img src="imgs/puffleazul.webp" alt="Blue Puffle" onerror="this.outerHTML='<span style=&quot;font-size:36px&quot;>🔵</span>'">
+        <div class="pname">Blue</div><div class="ptype">Esportivo</div>
+      </div>
+      <div class="puffle-item">
+        <img src="imgs/pufflevermelho.png" alt="Red Puffle" onerror="this.outerHTML='<span style=&quot;font-size:36px&quot;>🔴</span>'">
+        <div class="pname">Red</div><div class="ptype">Selvagem</div>
+      </div>
+      <div class="puffle-item">
+        <img src="imgs/Puffle_amarelo.webp" alt="Yellow Puffle" onerror="this.outerHTML='<span style=&quot;font-size:36px&quot;>🟡</span>'">
+        <div class="pname">Yellow</div><div class="ptype">Artístico</div>
+      </div>
+      <div class="puffle-item">
+        <img src="imgs/pufflepreto.webp" alt="Black Puffle" onerror="this.outerHTML='<span style=&quot;font-size:36px&quot;>⚫</span>'">
+        <div class="pname">Black</div><div class="ptype">Rebelde</div>
+      </div>
+    </div>
+    <p style="text-align:center;color:rgba(255,255,255,.4);font-size:75%">Cada convidado adota um puffle! 🐾</p>`
+  }
+};
+
+function modal(id) {
+  const m=MODALS[id];
+  if(!m) return;
+  document.getElementById('mtitle').textContent=m.title;
+  document.getElementById('mbody').innerHTML=m.html;
+  document.getElementById('overlay').classList.add('open');
+  SFX.pop();
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function closeBg(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  cheatBuf=(cheatBuf+e.key.toUpperCase()).slice(-8);
+  if(cheatBuf==='WADDLEON'){
+    ativarWaddleon();
+    cheatBuf='';
+  }
+});
+
+function ativarWaddleon() {
+  SFX.waddle();
+  toast('⭐ WADDLEON! Código secreto ativado! Waddle On! 🐧✨');
+  const ov=document.getElementById('waddleon');
+  ov.style.display='block';
+  ov.innerHTML='';
+  const em=['🐧','❄️','🌟','✨','🎉','🪙','🐾','💙','⭐'];
+  for(let i=0;i<30;i++){
+    const d=document.createElement('div');
+    d.style.position='absolute';
+    d.style.fontSize=(14+Math.random()*32)+'px';
+    d.style.left=(Math.random()*94)+'%';
+    d.style.top=(Math.random()*90)+'%';
+    d.style.animation='pop-in .5s ease both';
+    d.style.animationDelay=(Math.random()*1.4)+'s';
+    d.style.opacity='0';
+    d.textContent=em[Math.floor(Math.random()*em.length)];
+    ov.appendChild(d);
+  }
+  setTimeout(()=>{ ov.style.display='none'; ov.innerHTML=''; },3600);
+}
+
+function toast(msg,bg='var(--gold)',cor='var(--dark)') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=bg;
+  t.style.color=cor;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+const phrases = [
+  'Waddle on! 🐧',
+  'A neve está incrível! ❄️',
+  'EPF precisa de você! 🕵️',
+  'Hora de celebrar! 🎂',
+  'Peguei um peixe! 🐟',
+  'Cuidado com Herbert... 🐻'
+];
+
+let pi=0;
+setInterval(()=>{ if(curScr==='s-map') toast(phrases[pi++%phrases.length],'#0D47A1','white'); },15000);
+</script>
+</body>
+</html>
